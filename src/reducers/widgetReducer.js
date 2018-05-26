@@ -1,10 +1,36 @@
-import {FIND_ALL_WIDGETS, ADD_WIDGET, DELETE_WIDGET, SAVE}
-  from "../constants/index"
+import * as constants from "../constants/index"
 
-export const widgetReducer = (state = {widgets: []}, action) => {
+export const widgetReducer = (state = {widgets: [], preview: false}, action) => {
+  let newState
   switch (action.type) {
 
-    case 'SELECT_WIDGET_TYPE':
+    case constants.PREVIEW:
+      return {
+        widgets: state.widgets,
+        preview: !state.preview
+      }
+
+    case constants.HEADING_TEXT_CHANGED:
+      return {
+        widgets: state.widgets.map(widget => {
+          if(widget.id === action.id) {
+            widget.text = action.text
+          }
+          return Object.assign({}, widget)
+        })
+      }
+
+    case constants.HEADING_SIZE_CHANGED:
+      return {
+        widgets: state.widgets.map(widget => {
+          if(widget.id === action.id) {
+            widget.size = action.size
+          }
+          return Object.assign({}, widget)
+        })
+      }
+
+    case constants.SELECT_WIDGET_TYPE:
       console.log(action);
       let newState = {
         widgets: state.widgets.filter((widget) => {
@@ -16,7 +42,7 @@ export const widgetReducer = (state = {widgets: []}, action) => {
       }
       return JSON.parse(JSON.stringify(newState))
 
-    case SAVE:
+    case constants.SAVE:
 
 
       fetch('http://localhost:8080/api/widget/save', {
@@ -28,22 +54,26 @@ export const widgetReducer = (state = {widgets: []}, action) => {
 
 
       return state
-    case FIND_ALL_WIDGETS:
-      return {
-        widgets: action.widgets
-      }
-    case DELETE_WIDGET:
+    case constants.FIND_ALL_WIDGETS:
+      newState = Object.assign({}, state)
+      newState.widgets = action.widgets
+      return newState
+    case constants.DELETE_WIDGET:
       return {
         widgets: state.widgets.filter(widget => (
           widget.id !== action.id
         ))
       }
-    case ADD_WIDGET:
+    case constants.ADD_WIDGET:
       return {
         widgets: [
           ...state.widgets,
-          {id: state.widgets.length + 1,
-            text: 'New Widget', widgetType: 'Paragraph' }
+          {
+            id: state.widgets.length + 1,
+            text: 'New Widget',
+            widgetType: 'Paragraph',
+            size: '2'
+          }
         ]
       }
     default:
